@@ -67,6 +67,14 @@ def chip(text, cls=""):
 # --------------------------------------------------------------------------- arms
 
 
+def title_html(title):
+    """Split at the first colon: main name on line 1 (accent colour), subtitle on line 2."""
+    head, sep, tail = title.partition(":")
+    if not sep:
+        return e(title)
+    return '<span class="t1">%s</span><span class="t2">%s</span>' % (e(head.strip()), e(tail.strip()))
+
+
 def arm_labels(entry, backbone_name):
     """Under-video caption. Default arm = backbone name only; situated arms name the
     backbone plus the SI objective, e.g. "SB + SI (quality)"."""
@@ -284,7 +292,7 @@ def backbone_html(key, name, entries, idx):
     )
     return (
         '<section class="bb" id="bb-{key}" data-bb="{key}">'
-        '<h2 class="bbh"><span class="bbshort">{name}</span><span class="bblong">{full}</span></h2>'
+        '<h2 class="bbh"><span class="bbk">Backbone:</span> {full} ({name})</h2>'
         "{body}</section>"
     ).format(key=e(key), name=e(name), n=len(rows), body=body,
              full=e(BACKBONE_LONG.get(key, "")))
@@ -313,15 +321,16 @@ a{color:var(--ink);text-underline-offset:2px}
 
 /* ---------- header ---------- */
 header.top{padding:calc(var(--s6) + 16px) 0 var(--s5)}
-h1{font-size:clamp(28px,3.4vw,46px);line-height:1.15;font-weight:600;letter-spacing:-.02em;
- margin:0 0 var(--s4)}
+h1{margin:0 0 var(--s4);text-align:center;display:flex;flex-direction:column;gap:var(--s2);line-height:1.15;letter-spacing:-.02em}
+.t1{font-size:clamp(34px,4.2vw,56px);font-weight:700;color:var(--a1)}
+.t2{font-size:clamp(18px,2vw,26px);font-weight:500;color:var(--ink)}
 .venue{font:600 12px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;
- color:var(--ink2);margin:0 0 var(--s2)}
-.authors{font-size:14px;color:var(--ink2);margin:0 0 var(--s2)}
+ color:var(--ink2);margin:0 0 var(--s2);text-align:center}
+.authors{font-size:14px;color:var(--ink2);margin:0 0 var(--s2);text-align:center}
 hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
 .abstract{font-size:16px;line-height:1.65;margin:var(--s4) 0;color:var(--ink);
  background:#EEF3FA;border-left:3px solid var(--a1);padding:var(--s4) var(--s5);border-radius:2px}
-.links{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s2)}
+.links{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s2);justify-content:center}
 .links a{font-size:13px;border:1px solid var(--rule);border-radius:999px;
  padding:3px 12px;text-decoration:none;background:var(--panel)}
 .links a:hover{border-color:var(--ink3)}
@@ -352,9 +361,7 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
  margin:var(--s5) 0 var(--s2);font-weight:600}
 .seccap{font-size:14px;color:var(--ink2);margin:0 0 var(--s2)}
 .legend{font-size:11.5px;color:var(--ink3);margin:0 0 var(--s3);font-style:italic;text-align:right}
-.bbh{margin:0 0 var(--s4);padding-top:var(--s3);text-align:center;display:flex;flex-direction:column;gap:2px}
-.bbshort{font-size:26px;font-weight:700;letter-spacing:-.01em;color:var(--a1)}
-.bblong{font-size:14px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.bbh{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 var(--s4);padding-top:var(--s3)}
 .bbnote{font-size:13px;color:var(--ink2);margin:var(--s2) 0 var(--s4)}
 .bbk{color:var(--ink3);font-weight:500}
 
@@ -691,7 +698,7 @@ PAGE = """<!DOCTYPE html>
 <body>
 <div class="wrap">
 <header class="top">
-<h1>__TITLE__</h1>
+<h1>__TITLE_HTML__</h1>
 <p class="venue">__VENUE__</p>
 <p class="authors">__AUTHORS__</p>
 <hr class="rule">
@@ -742,6 +749,7 @@ def build(site, manifest):
     out = PAGE
     for token, value in [
         ("__TITLE__", e(site.get("title", ""))),
+        ("__TITLE_HTML__", title_html(site.get("title", ""))),
         ("__CSS__", CSS),
         ("__VENUE__", e(site.get("venue", ""))),
         ("__AUTHORS__", e(site.get("authors", ""))),
