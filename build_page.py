@@ -345,7 +345,7 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
  white-space:nowrap;border-bottom:2px solid transparent;letter-spacing:.02em}
 .navlink.cur{color:var(--ink);border-bottom-color:var(--ink)}
 .navlink:hover{color:var(--ink)}
-@media (min-width:1100px){
+@media (min-width:1560px){
  .siderail{position:fixed;top:38vh;left:max(10px,calc((100vw - var(--measure))/2 - 150px));
   right:auto;height:auto;flex-direction:column;background:none;border:0;padding:0;
   gap:var(--s2);width:130px;overflow:visible;align-items:flex-start}
