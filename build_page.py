@@ -37,6 +37,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 BACKBONE_ORDER = ["sb", "sgmse", "flowse", "storm"]
 BACKBONE_NAMES = {"sb": "SB", "sgmse": "SGMSE+", "flowse": "FlowSE", "storm": "StoRM"}
+BACKBONE_FULL = {"sb": "Schr\u00f6dinger Bridge", "sgmse": "score-based diffusion (SGMSE+)",
+                 "flowse": "flow matching (FlowSE)", "storm": "stochastic regeneration (StoRM)"}
 STRATEGY_ORDER = ["default", "quality", "efficiency"]
 
 
@@ -156,8 +158,8 @@ def arm_html(entry, backbone_name, idx, default_compute):
         title_attr=title_attr,
         armlab=armlab,
         chips="".join(chips),
-        heard=audio_btn(entry.get("heard"), "Audio heard", "wide"),
-        enh=audio_btn(entry.get("enh"), "Enhanced", "wide"),
+        heard=audio_btn(entry.get("heard"), "Ameca heard", "wide"),
+        enh=audio_btn(entry.get("enh"), "Enhanced speech", "wide"),
     )
 
 
@@ -282,11 +284,12 @@ def backbone_html(key, name, entries, idx):
     )
     return (
         '<section class="bb" id="bb-{key}" data-bb="{key}">'
-        '<h2 class="bbh">{name}</h2>'
+        '<h2 class="bbh"><span class="bbk">Backbone:</span> {full}</h2>'
         '<p class="bbnote">{n} utterances, three arms each: '
         "backbone default, situated quality, situated efficiency.</p>"
         "{body}</section>"
-    ).format(key=e(key), name=e(name), n=len(rows), body=body)
+    ).format(key=e(key), name=e(name), n=len(rows), body=body,
+             full=e(BACKBONE_FULL.get(key, name) if key != "sb" else "Schr\u00f6dinger Bridge (SB)"))
 
 
 # --------------------------------------------------------------------------- assets
@@ -311,14 +314,14 @@ body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans
 a{color:var(--ink);text-underline-offset:2px}
 
 /* ---------- header ---------- */
-header.top{padding:var(--s6) 0 var(--s4)}
-h1{font-size:clamp(28px,3.6vw,44px);line-height:1.15;font-weight:600;letter-spacing:-.02em;
- margin:0 0 var(--s3);max-width:26ch}
+header.top{padding:calc(var(--s6) + 16px) 0 var(--s5)}
+h1{font-size:clamp(28px,3.4vw,46px);line-height:1.15;font-weight:600;letter-spacing:-.02em;
+ margin:0 0 var(--s4)}
 .venue{font:600 12px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;
  color:var(--ink2);margin:0 0 var(--s2)}
 .authors{font-size:14px;color:var(--ink2);margin:0 0 var(--s2)}
 hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
-.abstract{font-size:15.5px;max-width:70ch;margin:var(--s4) 0;color:var(--ink)}
+.abstract{font-size:16px;line-height:1.65;margin:var(--s4) 0;color:var(--ink)}
 .links{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s2)}
 .links a{font-size:13px;border:1px solid var(--rule);border-radius:999px;
  padding:3px 12px;text-decoration:none;background:var(--panel)}
@@ -329,14 +332,17 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
  border-bottom:1px solid var(--rule);display:flex;gap:var(--s4);align-items:center;
  overflow-x:auto;height:44px;padding:0 var(--s4);scrollbar-width:none}
 .siderail::-webkit-scrollbar{display:none}
+.navhead{display:none}
 .navlink{font:600 12.5px/44px var(--sans);color:var(--ink2);text-decoration:none;
  white-space:nowrap;border-bottom:2px solid transparent;letter-spacing:.02em}
 .navlink.cur{color:var(--ink);border-bottom-color:var(--ink)}
 .navlink:hover{color:var(--ink)}
 @media (min-width:1100px){
- .siderail{position:fixed;top:38vh;right:max(10px,calc((100vw - var(--measure))/2 - 84px));
-  left:auto;height:auto;flex-direction:column;background:none;border:0;padding:0;
-  gap:var(--s2);width:110px;overflow:visible}
+ .siderail{position:fixed;top:38vh;left:max(10px,calc((100vw - var(--measure))/2 - 150px));
+  right:auto;height:auto;flex-direction:column;background:none;border:0;padding:0;
+  gap:var(--s2);width:130px;overflow:visible;align-items:flex-start}
+ .siderail .navhead{display:block;font:600 11px/1.6 var(--mono);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);margin:0 0 var(--s1,4px);padding-left:10px}
  .siderail .navlink{font:600 11.5px/1.5 var(--sans);border-bottom:0;
   border-left:2px solid transparent;padding:3px 0 3px 10px}
  .siderail .navlink.cur{border-left-color:var(--ink);border-bottom:0}
@@ -345,17 +351,18 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
 /* ---------- section head ---------- */
 .sech{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
  margin:var(--s5) 0 var(--s2);font-weight:600}
-.seccap{font-size:14px;color:var(--ink2);max-width:78ch;margin:0 0 var(--s2)}
+.seccap{font-size:14px;color:var(--ink2);margin:0 0 var(--s2)}
 .legend{font-size:11.5px;color:var(--ink3);margin:0 0 var(--s5);font-style:italic}
 .bbh{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0;padding-top:var(--s2)}
 .bbnote{font-size:13px;color:var(--ink2);margin:var(--s2) 0 var(--s4)}
+.bbk{color:var(--ink3);font-weight:500}
 
 /* ---------- row ---------- */
 .row{border-top:1px solid var(--rule);padding:var(--s5) 0 var(--s5);scroll-margin-top:56px}
 .rhead{margin:0 0 var(--s4);display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
 .bbtag{font:600 11px/1.7 var(--mono);letter-spacing:.04em;text-transform:uppercase;
  color:var(--ink2);border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
-.utt{font-size:17px;line-height:1.3;font-weight:500;margin:0;max-width:64ch;
+.utt{font-size:17px;line-height:1.3;font-weight:500;margin:0;
  letter-spacing:-.005em;flex:1 1 260px}
 .rmeta{display:flex;gap:var(--s2);align-items:center;margin-left:auto}
 
@@ -691,11 +698,10 @@ __LINKS__
 </header>
 </div>
 
-<nav class="siderail" aria-label="backbone sections" role="navigation">__NAV__</nav>
+<nav class="siderail" aria-label="backbone sections" role="navigation"><span class="navhead">Backbone</span>__NAV__</nav>
 
 <div class="wrap">
 <section id="humanoid">
-<h2 class="sech">__ROBOT_TITLE__</h2>
 <p class="seccap">__CAPTION__</p>
 <p class="legend">SI = Situated Inference</p>
 __SECTIONS__
