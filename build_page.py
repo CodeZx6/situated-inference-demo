@@ -37,8 +37,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 BACKBONE_ORDER = ["sb", "sgmse", "flowse", "storm"]
 BACKBONE_NAMES = {"sb": "SB", "sgmse": "SGMSE+", "flowse": "FlowSE", "storm": "StoRM"}
-BACKBONE_FULL = {"sb": "Schr\u00f6dinger Bridge", "sgmse": "score-based diffusion (SGMSE+)",
-                 "flowse": "flow matching (FlowSE)", "storm": "stochastic regeneration (StoRM)"}
+BACKBONE_LONG = {"sb": "Schr\u00f6dinger Bridge", "sgmse": "Score-based diffusion",
+                 "flowse": "Flow matching", "storm": "Stochastic regeneration"}
 STRATEGY_ORDER = ["default", "quality", "efficiency"]
 
 
@@ -284,12 +284,10 @@ def backbone_html(key, name, entries, idx):
     )
     return (
         '<section class="bb" id="bb-{key}" data-bb="{key}">'
-        '<h2 class="bbh"><span class="bbk">Backbone:</span> {full}</h2>'
-        '<p class="bbnote">{n} utterances, three arms each: '
-        "backbone default, situated quality, situated efficiency.</p>"
+        '<h2 class="bbh"><span class="bbshort">{name}</span><span class="bblong">{full}</span></h2>'
         "{body}</section>"
     ).format(key=e(key), name=e(name), n=len(rows), body=body,
-             full=e(BACKBONE_FULL.get(key, name) if key != "sb" else "Schr\u00f6dinger Bridge (SB)"))
+             full=e(BACKBONE_LONG.get(key, "")))
 
 
 # --------------------------------------------------------------------------- assets
@@ -321,7 +319,8 @@ h1{font-size:clamp(28px,3.4vw,46px);line-height:1.15;font-weight:600;letter-spac
  color:var(--ink2);margin:0 0 var(--s2)}
 .authors{font-size:14px;color:var(--ink2);margin:0 0 var(--s2)}
 hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
-.abstract{font-size:16px;line-height:1.65;margin:var(--s4) 0;color:var(--ink)}
+.abstract{font-size:16px;line-height:1.65;margin:var(--s4) 0;color:var(--ink);
+ background:#EEF3FA;border-left:3px solid var(--a1);padding:var(--s4) var(--s5);border-radius:2px}
 .links{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s2)}
 .links a{font-size:13px;border:1px solid var(--rule);border-radius:999px;
  padding:3px 12px;text-decoration:none;background:var(--panel)}
@@ -352,12 +351,16 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
 .sech{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
  margin:var(--s5) 0 var(--s2);font-weight:600}
 .seccap{font-size:14px;color:var(--ink2);margin:0 0 var(--s2)}
-.legend{font-size:11.5px;color:var(--ink3);margin:0 0 var(--s5);font-style:italic}
-.bbh{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0;padding-top:var(--s2)}
+.legend{font-size:11.5px;color:var(--ink3);margin:0 0 var(--s3);font-style:italic;text-align:right}
+.bbh{margin:0 0 var(--s4);padding-top:var(--s3);text-align:center;display:flex;flex-direction:column;gap:2px}
+.bbshort{font-size:26px;font-weight:700;letter-spacing:-.01em;color:var(--a1)}
+.bblong{font-size:14px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
 .bbnote{font-size:13px;color:var(--ink2);margin:var(--s2) 0 var(--s4)}
 .bbk{color:var(--ink3);font-weight:500}
 
 /* ---------- row ---------- */
+.bb{padding:var(--s4) 0 var(--s5);margin:0 calc(50% - 50vw);padding-left:calc(50vw - 50%);padding-right:calc(50vw - 50%)}
+.bb:nth-of-type(even){background:#F1EEE8}
 .row{border-top:1px solid var(--rule);padding:var(--s5) 0 var(--s5);scroll-margin-top:56px}
 .rhead{margin:0 0 var(--s4);display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
 .bbtag{font:600 11px/1.7 var(--mono);letter-spacing:.04em;text-transform:uppercase;
@@ -702,7 +705,6 @@ __LINKS__
 
 <div class="wrap">
 <section id="humanoid">
-<p class="seccap">__CAPTION__</p>
 <p class="legend">SI = Situated Inference</p>
 __SECTIONS__
 </section>
