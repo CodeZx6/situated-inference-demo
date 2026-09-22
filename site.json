@@ -1,0 +1,19 @@
+{
+  "title": "Situated Inference: Adapting Frozen Generative Speech Enhancement under Acoustic Distribution Shift",
+  "authors": "Anonymous authors",
+  "venue": "ICLR 2027 submission — under review",
+  "abstract": "Diffusion and flow matching models restore noisy speech through iterative conditional generation, while a fixed inference strategy may become unsuitable under the acoustic distribution shifts encountered in real-world deployment. We find that these shifts change the effectiveness and portability of inference strategies even when the enhancer remains frozen. This finding motivates Situated Inference, which specializes the execution of a frozen generative enhancer to a target acoustic distribution using representative paired target speech. Situated Inference estimates a performance profile over a structured inference space whose strategies jointly control observation processing, the reverse starting point, and the solver step count. It uses this profile to specialize the enhancer under either a quality or efficiency objective and fixes the resulting strategy for subsequent inputs. Across four generative backbones and three acoustic conditions, Situated Inference improves perceptual speech quality under the quality objective and reduces the number of function evaluations (NFE) under the efficiency objective. Strategy portability and component analyses further indicate that effective strategies depend on acoustic conditions and that joint adaptation captures benefits beyond changing the solver step count alone.",
+  "links": [
+    {
+      "label": "Robot demo",
+      "href": "#humanoid",
+      "style": "is-primary"
+    }
+  ],
+  "robot_section_title": "Situated Inference on an Ameca humanoid",
+  "intro": [
+    "Each trial is recorded in a real room. A loudspeaker plays one noisy utterance from the LSM condition, and the Ameca humanoid listens through its own ear microphone; that recording is the <b>heard</b> player below. The frozen backbone&rsquo;s measured inference time for that utterance &mdash; NVIDIA H200, batch size 1, steady state &mdash; is then reproduced as a pause, after which Ameca speaks the enhanced output with lip-sync. The pause is the measured GPU compute time and nothing else: no network round-trip, disk, or codec overhead is added to it.",
+    "We make three passes over the same 30 utterances, in the same clip order every time: the backbone&rsquo;s <b>default</b> inference strategy, then the strategy selected by Situated Inference under the <b>quality objective</b>, then the one selected under the <b>efficiency objective</b>. The videos are uncut, so the visible wait is exactly the reproduced compute time, and the three timelines in a row share one axis for direct comparison. For SGMSE+ and StoRM the two objectives select the same strategy, and the efficiency arm is marked accordingly."
+  ],
+  "footnote": "Timelines share one axis within each utterance row. The timer reports elapsed time since the noisy input ends; the inference segment is the reproduced GPU compute time for that utterance and configuration."
+}
