@@ -11,6 +11,7 @@
     }
   ],
   "robot_section_title": "Situated Inference on an Ameca humanoid",
+  "section_caption": "Three passes over the same utterances: the backbone's default strategy, then the strategies selected by Situated Inference under the quality and efficiency objectives. The pause is the measured GPU compute time (H200, batch 1).",
   "intro": [
     "Each trial is recorded in a real room. A loudspeaker plays one noisy utterance from the LSM condition, and the Ameca humanoid listens through its own ear microphone; that recording is the <b>heard</b> player below. The frozen backbone&rsquo;s measured inference time for that utterance &mdash; NVIDIA H200, batch size 1, steady state &mdash; is then reproduced as a pause, after which Ameca speaks the enhanced output with lip-sync. The pause is the measured GPU compute time and nothing else: no network round-trip, disk, or codec overhead is added to it.",
     "We make three passes over the same 30 utterances, in the same clip order every time: the backbone&rsquo;s <b>default</b> inference strategy, then the strategy selected by Situated Inference under the <b>quality objective</b>, then the one selected under the <b>efficiency objective</b>. The videos are uncut, so the visible wait is exactly the reproduced compute time, and the three timelines in a row share one axis for direct comparison. For SGMSE+ and StoRM the two objectives select the same strategy, and the efficiency arm is marked accordingly."
