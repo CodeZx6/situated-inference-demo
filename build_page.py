@@ -1,26 +1,18 @@
 #!/usr/bin/env python3
-"""Build the static AMECA speech-enhancement showcase page.
+"""Build the static Situated Inference project page (index.html).
 
-DESIGN NOTE (2026-09, editorial rebuild; replaces the Bulma "Nerfies" clone)
- 1. Reference points: distill.pub article pages, Apple ML Research index, and the
-    plain-rule listings both use: off-white paper, near-black text, hairline rules,
-    no cards, no shadows, no hero banner. We copy that restraint, not their layout.
- 2. Palette: paper #FAF9F7, panel #FFFFFF, ink #17161A, muted ink #6E6A64,
-    rule #E4E0D9. Gantt "hearing" is one muted grey #D6D1C9; each strategy owns one
-    accent used for its label, bar and chips: default #6B6660 (graphite),
-    situated quality #1D5FA8 (blue), situated efficiency #B4531F (terracotta);
-    the "repeat" segment is that accent at 24% on white (#D2D0CE/#C4D6E9/#EDD2C1).
- 3. Type: one sans (system UI stack) + one mono (ui-monospace/SF Mono) for every
-    number, so digits are tabular and nothing re-flows when values change length.
-    Scale 11.5 / 13 / 15 / 17 / clamp(28-44) px, line-height 1.55 body, 1.25 headings.
- 4. Spacing scale 4 / 8 / 12 / 20 / 32 / 56 px; content measure fluid up to 1240 px;
-    each utterance row is a 3-column CSS grid (minmax(0,1fr) each) so the arms fill
-    the column width equally; video keeps a 2:3 aspect-ratio at any column width.
-    >=900px: 3 columns. <900px: cells stack vertically (Gantt stays full width).
- 5. Structure: vertical backbone sections (SB, SGMSE+, FlowSE, StoRM) in vertical
-    order with a compact scrollspy nav (side rail wide / top bar narrow), utterance
-    rows, three arms racing on one clock, one shared Gantt axis with one playhead.
- 6. No framework, no build step, no external asset: stdlib Python out, static HTML in.
+DESIGN NOTE (2026-09, Clarity rebuild)
+ 1. Layout and typography follow Clarity (Shikun Liu, CC0, shikun.io/projects/clarity):
+    tinted hero with a cover image and its blurred copy behind it, a serif reading
+    column (Charter, bundled in assets/fonts) under sans headings (Poppins), and width
+    tiers (main 760 / demo 1240 px). No jQuery, MathJax or FontAwesome: static HTML.
+ 2. The page is the demo: a short hero (title, TL;DR, cover), a collapsible abstract,
+    then the Ameca humanoid rows. All text lives in site.json.
+ 3. The Ameca demo keeps the synchronised 'race' rows: three arms on one clock, a
+    shared Gantt axis and one playhead. Strategy accents: default #6B6660, situated
+    quality #1D5FA8, situated efficiency #B4531F.
+ 4. Sync: the audible arm is the clock and is never retimed; muted arms follow with
+    hysteresis and seek only on large drift (clips carry a 0.5 s GOP).
 
     python3 build_page.py
     python3 build_page.py --manifest robot/manifest_stub.json -o preview.html
@@ -302,94 +294,122 @@ def backbone_html(key, name, entries, idx):
 # --------------------------------------------------------------------------- assets
 
 CSS = """
+@font-face{font-family:Charter;font-style:normal;font-weight:400;font-display:swap;src:url(assets/fonts/charter_regular.woff2) format('woff2')}
+@font-face{font-family:Charter;font-style:italic;font-weight:400;font-display:swap;src:url(assets/fonts/charter_italic.woff2) format('woff2')}
+@font-face{font-family:Charter;font-style:normal;font-weight:700;font-display:swap;src:url(assets/fonts/charter_bold.woff2) format('woff2')}
+@font-face{font-family:Charter;font-style:italic;font-weight:700;font-display:swap;src:url(assets/fonts/charter_bold_italic.woff2) format('woff2')}
 :root{
- --paper:#FAF9F7; --panel:#FFFFFF; --ink:#17161A; --ink2:#6E6A64; --ink3:#918C85;
- --rule:#E4E0D9; --hear:#D6D1C9;
+ --paper:#FFFFFF; --panel:#F6F6F6; --hero:#E8ECEF; --ink:#2F2F2F; --ink2:#5F5F5F; --ink3:#8A8A8A;
+ --rule:#E2E2E2; --hear:#D6D6D6;
  --s1:4px; --s2:8px; --s3:12px; --s4:20px; --s5:32px; --s6:56px;
- --gap:24px; --measure:1240px;
- --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+ --gap:24px; --main:760px; --large:1100px; --measure:1240px;
+ --sans:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+ --serif:Charter,"Bitstream Charter","Iowan Old Style",Georgia,serif;
  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
  --a0:#6B6660; --a1:#1D5FA8; --a2:#B4531F;
  --r0:#D2D0CE; --r1:#C4D6E9; --r2:#EDD2C1;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);
- font-feature-settings:"kern" 1;-webkit-font-smoothing:antialiased}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:300 15px/1.55 var(--sans);
+ -webkit-font-smoothing:antialiased}
+b,strong{font-weight:600}
 .n,.mono,.clock,.chip,.gnum,.scrub{font-variant-numeric:tabular-nums}
-.wrap{max-width:var(--measure);margin:0 auto;padding:0 var(--s4)}
-a{color:var(--ink);text-underline-offset:2px}
+a{color:inherit;text-underline-offset:2px}
+img{display:block;max-width:100%;height:auto}
+::selection{color:#fff;background:#353535}
 
-/* ---------- header ---------- */
-header.top{padding:calc(var(--s6) + 16px) 0 0}
-h1{margin:0 0 var(--s4);text-align:center;display:flex;flex-direction:column;gap:var(--s2);line-height:1.15;letter-spacing:-.02em}
-.t1{font-size:clamp(28px,3vw,38px);font-weight:700;color:var(--a1)}
-.t2{font-size:clamp(20px,2.4vw,30px);font-weight:500;color:var(--ink)}
-.venue{font:600 12px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;
- color:var(--ink2);margin:0 0 var(--s2);text-align:center}
-.authors{font-size:14px;color:var(--ink2);margin:0 0 var(--s2);text-align:center}
-hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
-.abstract{font-size:16px;line-height:1.65;margin:var(--s4) 0;color:var(--ink)}
-.links{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s2);justify-content:center}
-.links a{font-size:13px;border:1px solid var(--rule);border-radius:999px;
- padding:3px 12px;text-decoration:none;background:var(--panel)}
-.links a:hover{border-color:var(--ink3)}
+/* ---------- width tiers (Clarity: main / large / extra-large) ---------- */
+.w-main,.wrap{margin:0 auto;padding:0 var(--s4)}
+.w-main{max-width:calc(var(--main) + 2*var(--s4))}
+.wrap{max-width:calc(var(--measure) + 2*var(--s4))}
 
-/* ---------- scrollspy nav: top bar narrow / side rail wide ---------- */
-.siderail{position:sticky;top:0;z-index:40;background:var(--paper);
- border-bottom:1px solid var(--rule);display:flex;gap:var(--s4);align-items:center;
- overflow-x:auto;height:44px;padding:0 var(--s4);scrollbar-width:none}
-.siderail::-webkit-scrollbar{display:none}
-.navhead{display:none}
-.navlink{font:600 12.5px/44px var(--sans);color:var(--ink2);text-decoration:none;
- white-space:nowrap;border-bottom:2px solid transparent;letter-spacing:.02em}
-.navlink.cur{color:var(--ink);border-bottom-color:var(--ink)}
+/* ---------- hero ---------- */
+.hero{background:var(--hero)}
+.hero-in{max-width:calc(var(--large) + 2*var(--s4));margin:0 auto;padding:var(--s5) var(--s4);
+ display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center}
+.venue{font:600 12px/1.5 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin:0 0 var(--s3)}
+h1{margin:0 0 var(--s4);display:flex;flex-direction:column;gap:var(--s2);line-height:1.15;letter-spacing:-.015em;font-weight:600}
+.t1{font-size:clamp(32px,4.2vw,50px);color:var(--a1)}
+.t2{font-size:clamp(19px,2.1vw,26px);font-weight:500;color:var(--ink)}
+.authors{font-style:italic;font-weight:500;font-size:15px;margin:0 0 var(--s4);color:var(--ink2)}
+.tldr{font:400 16.5px/1.6 var(--sans);margin:0 0 var(--s5);color:var(--ink)}
+.tldr b{color:var(--a1)}
+.links{display:flex;gap:var(--s3);flex-wrap:wrap}
+.links a{display:inline-flex;align-items:center;gap:8px;font:500 14px/1 var(--sans);text-decoration:none;
+ color:var(--ink);background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.08);border-radius:999px;padding:10px 16px;
+ transition:background .15s,border-color .15s}
+.links a:hover{background:#fff;border-color:rgba(0,0,0,.18)}
+.links svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cover{position:relative;justify-self:end;width:min(100%,300px)}
+.cover img{width:100%;height:auto;border-radius:10px;aspect-ratio:4/5;object-fit:cover}
+.cover .fg{position:relative;z-index:2}
+.cover .bg{position:absolute;inset:0;z-index:1;filter:blur(26px);opacity:.75;transform:translateY(10px) scale(.96)}
+.cover figcaption{position:relative;z-index:2;font:400 12.5px/1.4 var(--sans);color:var(--ink2);margin-top:var(--s2);text-align:center}
+
+/* ---------- sticky nav ---------- */
+.topnav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(8px);
+ -webkit-backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--rule)}
+.topnav-in{max-width:calc(var(--measure) + 2*var(--s4));margin:0 auto;padding:0 var(--s4);height:48px;
+ display:flex;align-items:center;gap:var(--s4);overflow-x:auto;scrollbar-width:none}
+.topnav-in::-webkit-scrollbar{display:none}
+.brand{font:600 14px/1 var(--sans);color:var(--a1);text-decoration:none;white-space:nowrap;margin-right:auto}
+.navlink{font:500 13px/48px var(--sans);color:var(--ink2);text-decoration:none;white-space:nowrap;
+ border-bottom:2px solid transparent}
 .navlink:hover{color:var(--ink)}
-@media (min-width:1560px){
- .siderail{position:fixed;top:38vh;left:max(10px,calc((100vw - var(--measure))/2 - 150px));
-  right:auto;height:auto;flex-direction:column;background:none;border:0;padding:0;
-  gap:var(--s2);width:130px;overflow:visible;align-items:flex-start}
- .siderail .navhead{display:block;font:600 11px/1.6 var(--mono);letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ink3);margin:0 0 var(--s1,4px);padding-left:10px}
- .siderail .navlink{font:600 11.5px/1.5 var(--sans);border-bottom:0;
-  border-left:2px solid transparent;padding:3px 0 3px 10px}
- .siderail .navlink.cur{border-left-color:var(--ink);border-bottom:0}
-}
+.navlink.cur{color:var(--ink);border-bottom-color:var(--ink)}
+.navbb{display:flex;align-items:center;gap:var(--s4)}
+.navbb .navlink.cur{color:var(--ink)}
+@media (max-width:720px){ .brand{display:none} .topnav-in{gap:var(--s3)} }
 
-/* ---------- section head ---------- */
-.sech{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
- margin:var(--s5) 0 var(--s2);font-weight:600}
-.seccap{font-size:14px;color:var(--ink2);margin:0 0 var(--s2)}
+/* ---------- sections ---------- */
+section.sec{padding:var(--s5) 0 0;scroll-margin-top:48px}
+#humanoid{padding-top:var(--s5)}
+.kicker{font:600 12px/1.5 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:0 0 var(--s2)}
+h2{font:600 clamp(24px,2.6vw,30px)/1.2 var(--sans);letter-spacing:-.01em;margin:0 0 var(--s4)}
+p.text{font:400 18px/1.68 var(--serif);color:#353535;margin:0 0 var(--s4)}
+p.text i{font-style:italic}
+.m{white-space:nowrap}
+details.abs{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:var(--s3) 0}
+details.abs summary{cursor:pointer;font:600 12px/1.5 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+ color:var(--ink2);list-style:none}
+details.abs summary::-webkit-details-marker{display:none}
+details.abs summary:before{content:"+";display:inline-block;width:1.2em;font-weight:500}
+details.abs[open] summary:before{content:"\2212"}
+details.abs p.text{margin:var(--s3) 0 var(--s2)}
+.howto{font:400 14px/1.55 var(--sans);color:var(--ink2);margin:0 0 var(--s2);padding:var(--s3) var(--s4);
+ background:var(--panel);border-radius:6px}
+footer.foot{margin-top:var(--s6);padding:var(--s5) 0;border-top:1px solid var(--rule);font:400 13px/1.6 var(--sans);color:var(--ink3);text-align:center}
+
+/* ---------- backbone sections ---------- */
 .legend{font-size:12px;color:var(--ink3);font-weight:400;font-style:italic}
-.bbh{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 var(--s3);padding-top:var(--s4);
+.bbh{font:600 20px/1.3 var(--sans);letter-spacing:-.01em;margin:0 0 var(--s3);padding-top:var(--s5);
  display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
-.bbnote{font-size:13px;color:var(--ink2);margin:var(--s2) 0 var(--s4)}
 .bbk{color:var(--ink3);font-weight:500}
+.bb{padding:0 0 var(--s4);scroll-margin-top:48px}
 
 /* ---------- row ---------- */
-.bb{padding:0 0 var(--s4)}
-.row:nth-of-type(even){background:#F1EEE8;margin:0 calc(-1 * var(--s4));padding-left:var(--s4);padding-right:var(--s4);border-radius:4px}
-.row{border-top:1px solid var(--rule);padding:var(--s5) 0 var(--s5);scroll-margin-top:56px}
+.row{border-top:1px solid var(--rule);padding:var(--s5) 0;scroll-margin-top:56px}
+.row:nth-of-type(even){background:var(--panel);margin:0 calc(-1 * var(--s4));padding-left:var(--s4);padding-right:var(--s4);border-radius:6px}
 .rhead{margin:0 0 var(--s4);display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
 .bbtag{font:600 11px/1.7 var(--mono);letter-spacing:.04em;text-transform:uppercase;
- color:var(--ink2);border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
-.utt{font-size:17px;line-height:1.3;font-weight:500;margin:0;
- letter-spacing:-.005em;flex:1 1 260px}
+ color:var(--ink2);border:1px solid var(--rule);border-radius:2px;padding:1px 6px;background:var(--paper)}
+.utt{font:italic 400 18px/1.4 var(--serif);margin:0;flex:1 1 260px}
 .rmeta{display:flex;gap:var(--s2);align-items:center;margin-left:auto}
 
 .cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap);width:100%}
 .cell{min-width:0;display:flex;gap:var(--s3);align-items:flex-start}
 .fig{margin:0;flex:1 1 58%;min-width:0}
 .frame{position:relative;width:100%;aspect-ratio:2/3;background:#141414;overflow:hidden;
- border:1px solid var(--rule);cursor:pointer}
+ border-radius:4px;cursor:pointer}
 .frame video{display:block;width:100%;height:100%;object-fit:cover}
 .frame video::-webkit-media-controls{display:none!important}
 .spk{position:absolute;top:6px;right:6px;font-size:12px;line-height:1;padding:4px 5px;
  border-radius:3px;background:rgba(0,0,0,.55);opacity:0;transition:opacity .15s}
 .frame.audible .spk{opacity:1}
 .frame.audible{outline:2px solid var(--ink);outline-offset:-2px}
-.armlab{font-size:11.5px;color:var(--a0);text-align:center;margin:var(--s1) 0 0;
- border-top:2px solid var(--a0);padding-top:3px}
+.armlab{font:500 12px/1.4 var(--sans);color:var(--a0);text-align:center;margin:var(--s1) 0 0;
+ border-top:2px solid var(--a0);padding-top:4px}
 .cell[data-arm="1"] .armlab{border-top-color:var(--a1);color:var(--a1)}
 .cell[data-arm="2"] .armlab{border-top-color:var(--a2);color:var(--a2)}
 
@@ -407,33 +427,33 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
 .side{flex:1 1 42%;min-width:76px;display:flex;flex-direction:column;gap:var(--s2)}
 .chips{display:flex;flex-wrap:wrap;gap:var(--s1);align-content:flex-start}
 .chip{font:11.5px/1.5 var(--mono);color:var(--ink2);border:1px solid var(--rule);
- background:var(--panel);border-radius:2px;padding:1px 6px;white-space:nowrap}
+ background:var(--paper);border-radius:2px;padding:1px 6px;white-space:nowrap}
 .chip .n{color:var(--ink);font-weight:600}
 .chip.hi{border-color:var(--a0);color:var(--a0)}
 .cell[data-arm="1"] .chip.hi{border-color:var(--a1);color:var(--a1)}
 .cell[data-arm="2"] .chip.hi{border-color:var(--a2);color:var(--a2)}
 .chip.eq{border-style:dashed}
 .auds{display:flex;flex-direction:column;gap:var(--s1)}
-.ab{appearance:none;cursor:pointer;font:11.5px/1.5 var(--sans);color:var(--ink2);
- background:var(--panel);border:1px solid var(--rule);border-radius:2px;
- padding:2px 7px 2px 5px;display:inline-flex;align-items:center;gap:5px}
+.ab{appearance:none;cursor:pointer;font:400 12px/1.5 var(--sans);color:var(--ink2);
+ background:var(--paper);border:1px solid var(--rule);border-radius:3px;
+ padding:2px 7px 2px 5px;display:inline-flex;align-items:center;gap:6px}
 .ab:hover{border-color:var(--ink3);color:var(--ink)}
 .ab .abi{width:0;height:0;border-left:6px solid currentColor;
  border-top:4px solid transparent;border-bottom:4px solid transparent}
 .ab.on{border-color:var(--ink);color:var(--ink)}
 .ab.on .abi{width:6px;height:8px;border:0;background:currentColor;
- box-shadow:inset 0 0 0 1px var(--panel)}
+ box-shadow:inset 0 0 0 1px var(--paper)}
 .ab.wide{width:100%;padding:5px 9px 5px 7px}
 
 /* ---------- transport ---------- */
 .transport{margin:var(--s4) 0 0;display:flex;align-items:center;gap:var(--s3);height:28px}
-.tbtn{appearance:none;cursor:pointer;background:var(--panel);border:1px solid var(--rule);
- border-radius:2px;font:12px/1 var(--sans);color:var(--ink);padding:6px 10px;height:26px}
+.tbtn{appearance:none;cursor:pointer;background:var(--paper);border:1px solid var(--rule);
+ border-radius:3px;font:500 12.5px/1 var(--sans);color:var(--ink);padding:6px 11px;height:28px;white-space:nowrap}
 .tbtn:hover{border-color:var(--ink3)}
-.tbtn{white-space:nowrap}
 .tbtn .pp,.tbtn .pls{display:none}
 .row.playing .tbtn.play .pl{display:none}
 .row.playing .tbtn.play .pp{display:inline}
+.row.loading .tbtn.play{opacity:.55}
 .scrub{flex:1;appearance:none;height:26px;background:none;cursor:pointer;margin:0}
 .scrub::-webkit-slider-runnable-track{height:2px;background:var(--rule)}
 .scrub::-webkit-slider-thumb{appearance:none;width:11px;height:11px;border-radius:50%;
@@ -445,21 +465,19 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
 
 /* ---------- gantt ---------- */
 .gantt{position:relative;margin:var(--s3) 0 0;--glab:86px}
-.grow{display:grid;grid-template-columns:var(--glab) 1fr;align-items:center;
- gap:0;height:22px}
-.glab{font:11.5px/1 var(--sans);color:var(--ink2);text-align:right;padding-right:10px;
+.grow{display:grid;grid-template-columns:var(--glab) 1fr;align-items:center;gap:0;height:22px}
+.glab{font:500 11.5px/1 var(--sans);color:var(--ink2);text-align:right;padding-right:10px;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.grow[data-arm="0"] .glab{color:var(--a0);font-weight:600}
-.grow[data-arm="1"] .glab{color:var(--a1);font-weight:600}
-.grow[data-arm="2"] .glab{color:var(--a2);font-weight:600}
-.gbar{position:relative;display:flex;height:12px;background:#F1EEE9}
+.grow[data-arm="0"] .glab{color:var(--a0)}
+.grow[data-arm="1"] .glab{color:var(--a1)}
+.grow[data-arm="2"] .glab{color:var(--a2)}
+.gbar{position:relative;display:flex;height:12px;background:#EDEDED}
 .gs{display:block;height:100%}
 .gh{background:var(--hear)}
 .grow[data-arm="0"] .gi{background:var(--a0)} .grow[data-arm="0"] .gr{background:var(--r0)}
 .grow[data-arm="1"] .gi{background:var(--a1)} .grow[data-arm="1"] .gr{background:var(--r1)}
 .grow[data-arm="2"] .gi{background:var(--a2)} .grow[data-arm="2"] .gr{background:var(--r2)}
-.gnum{position:absolute;top:-1px;font:11px/14px var(--mono);color:var(--ink);
- background:linear-gradient(var(--paper),var(--paper));white-space:nowrap}
+.gnum{position:absolute;top:-1px;font:11px/14px var(--mono);color:var(--ink);white-space:nowrap}
 .phwrap{position:absolute;left:var(--glab);right:0;top:0;bottom:0;pointer-events:none}
 .playhead{position:absolute;top:0;bottom:0;width:1px;background:var(--ink);left:0;
  opacity:0;transition:opacity .15s}
@@ -468,18 +486,21 @@ hr.rule{border:0;border-top:1px solid var(--rule);margin:var(--s4) 0}
  border-radius:50%;background:var(--ink)}
 .axis{margin:var(--s2) 0 0;padding-left:86px;display:flex;
  justify-content:space-between;font:11px/1.4 var(--mono);color:var(--ink3)}
-.akey{font:11.5px/1.4 var(--sans);color:var(--ink2);display:flex;gap:var(--s2);
- align-items:center}
+.akey{font:400 11.5px/1.4 var(--sans);color:var(--ink2);display:flex;gap:var(--s2);align-items:center}
 .sw{width:10px;height:8px;display:inline-block;margin-right:3px}
 .kh{background:var(--hear)} .ki{background:var(--a2)} .kr{background:var(--r2)}
 
-/* ---------- responsive: cells ---------- */
+/* ---------- responsive ---------- */
 @media (max-width:899px){
+ .hero-in{grid-template-columns:1fr;padding:var(--s5) var(--s4)}
+ .cover{justify-self:center;width:min(100%,300px)}
  .cells{grid-template-columns:1fr;gap:var(--s4)}
  .gantt{--glab:74px}
  .axis{padding-left:74px}
 }
+@media (max-width:600px){ .cover{display:none} .hero-in{padding:var(--s4)} .tldr{margin-bottom:var(--s4)} }
 @media (max-width:480px){
+ p.text{font-size:17px}
  .cell{flex-direction:column}
  .side{width:100%}
  .transport{gap:var(--s2)}
@@ -503,11 +524,18 @@ SCRIPT = r"""
   var was=(b===curBtn);
   stopAudio();
   if(was) return;
-  rows.forEach(function(r){r.pause();});
+  rows.forEach(function(r){r.pause(); r.stopSolo();});
   curBtn=b; b.classList.add('on');
   AUD.src=b.dataset.src; AUD.currentTime=0;
   AUD.play().catch(function(){ stopAudio(); });
  });
+
+ /* Sync model. The arm you hear is the clock and is never retimed, so its sound
+    is never time-stretched. The muted arms follow it: a gentle rate nudge for
+    small drift (with hysteresis so the rate does not flutter frame to frame) and
+    a seek only for large drift, which is cheap because clips carry a keyframe
+    every 0.5 s. When the audible arm has finished, the longest arm is the clock. */
+ var SEEK=0.35, NUDGE_ON=0.06, NUDGE_OFF=0.02, SLOW=0.92, FAST=1.08;
 
  function Row(el){
   var self=this;
@@ -520,7 +548,7 @@ SCRIPT = r"""
   this.scrub=el.querySelector('.scrub');
   this.now=el.querySelector('.now');
   this.raf=null; this.iv=null; this.dragging=false; this.soloIdx=-1;
-  this.ref=0;                       /* clock arm = longest clip */
+  this.ref=0;                       /* longest clip: decides when the row ends */
   for(var i=1;i<this.durs.length;i++) if(this.durs[i]>this.durs[this.ref]) this.ref=i;
 
   this.setAudible(parseInt(el.dataset.audible,10)||0);
@@ -546,27 +574,30 @@ SCRIPT = r"""
   this.paint(0);
  }
 
+ Row.prototype.warm=function(){       /* fetch clips before the first press */
+  this.vids.forEach(function(v){ if(v.preload!=='auto'){ v.preload='auto'; } });
+ };
  Row.prototype.setAudible=function(i){
   this.audible=i;
-  this.vids.forEach(function(v,k){ v.muted=(k!==i); });
+  this.vids.forEach(function(v,k){ v.muted=(k!==i); if(k===i) v.playbackRate=1; });
   this.frames.forEach(function(f,k){ f.classList.toggle('audible',k===i); });
  };
- /* solo: play exactly one arm's video alone, unmuted, independent of the synced
-    "play all" transport; starting a solo stops any other row's playback (sync or
-    solo) and this row's own sync playback. */
+ Row.prototype.clock=function(){
+  var a=this.audible;
+  if(this.vids[a] && this.vids[a].currentTime<this.durs[a]-0.06) return a;
+  return this.ref;
+ };
+ /* solo: play exactly one arm alone, unmuted, outside the synced transport */
  Row.prototype.toggleSolo=function(i){
   var self=this;
   stopAudio();
-  rows.forEach(function(r){ if(r!==self){ r.pause(); } });
+  rows.forEach(function(r){ if(r!==self){ r.pause(); r.stopSolo(); } });
   if(this.el.classList.contains('playing')) this.pause();
   if(this.soloIdx===i){ this.stopSolo(); return; }
   this.stopSolo();
   this.soloIdx=i;
   var ov=this.frames[i].querySelector('.ov');
-  this.vids.forEach(function(v,k){
-   v.muted=(k!==i);
-   if(k!==i) v.pause();
-  });
+  this.vids.forEach(function(v,k){ v.muted=(k!==i); if(k!==i) v.pause(); });
   this.frames.forEach(function(f,k){ f.classList.toggle('audible',k===i); });
   if(ov) ov.classList.add('on');
   var v=this.vids[i];
@@ -578,16 +609,16 @@ SCRIPT = r"""
   if(this.soloIdx<0) return;
   var i=this.soloIdx, v=this.vids[i], ov=this.frames[i].querySelector('.ov');
   v.pause();
-  this.frames[i].classList.remove('audible');
   if(ov) ov.classList.remove('on');
   this.soloIdx=-1;
+  this.setAudible(this.audible);
  };
  Row.prototype.seek=function(t){
   var self=this;
   this.vids.forEach(function(v,k){
    var tt=Math.min(t,Math.max(self.durs[k]-0.04,0));
-   if(v.readyState===0){                       /* preload="none": wait for metadata */
-    v.preload='metadata';
+   if(v.readyState===0){                       /* not loaded yet: wait for metadata */
+    v.preload='auto';
     v.addEventListener('loadedmetadata',function h(){
      v.removeEventListener('loadedmetadata',h); try{ v.currentTime=tt; }catch(e){}
     });
@@ -601,15 +632,18 @@ SCRIPT = r"""
   stopAudio();
   this.stopSolo();
   rows.forEach(function(r){ if(r!==self){ r.pause(); r.stopSolo(); } });
+  this.warm();
   this.el.classList.add('playing');
+  /* all play() calls stay inside the click so browsers allow the unmuted arm */
   this.vids.forEach(function(v,k){
+   v.playbackRate=1;
    if(self.durs[k]-v.currentTime<0.05) return;       /* ended: hold last frame */
-   v.playbackRate=1; var p=v.play(); if(p&&p.catch) p.catch(function(){});
+   var p=v.play(); if(p&&p.catch) p.catch(function(){});
   });
   cancelAnimationFrame(this.raf); clearInterval(this.iv);
   this.loop();
   /* rAF is frozen in background tabs; a slow interval keeps sync and playhead alive */
-  var s2=this; this.iv=setInterval(function(){ s2.tick(); },200);
+  this.iv=setInterval(function(){ self.tick(); },200);
  };
  Row.prototype.pause=function(){
   this.el.classList.remove('playing');
@@ -641,44 +675,55 @@ SCRIPT = r"""
   this.raf=requestAnimationFrame(function(){ self.loop(); });
  };
  Row.prototype.tick=function(){
-  var self=this;
-  var t=this.vids[this.ref].currentTime;
-  /* clock arm stalled (buffering, or a background tab suspending muted video):
-     don't fight it by dragging the others back */
-  var stalled=(t===this._lastT); this._lastT=t;
+  var self=this, c=this.clock(), cv=this.vids[c], t=cv.currentTime;
+  /* clock arm buffering: hold corrections instead of dragging the others around */
+  var stalled=(t===this._lastT && c===this._lastC) || cv.readyState<3;
+  this._lastT=t; this._lastC=c;
   this.vids.forEach(function(v,k){
-   if(k===self.ref||stalled) return;
-   if(t>=self.durs[k]-0.06){ if(!v.paused) v.pause(); return; }   /* hold last frame */
-   var d=v.currentTime-t;
-   if(Math.abs(d)>0.25){ try{ v.currentTime=t; }catch(e){} v.playbackRate=1; }
-   else if(Math.abs(d)>0.035){ v.playbackRate=d>0?0.94:1.06; }
-   else v.playbackRate=1;
+   if(k===c) return;
+   if(t>=self.durs[k]-0.06){ if(!v.paused) v.pause(); v.playbackRate=1; return; }  /* hold last frame */
+   if(stalled) return;
+   var d=v.currentTime-t, ad=Math.abs(d);
+   if(ad>SEEK){ try{ v.currentTime=t; }catch(e){} v.playbackRate=1; }
+   else if(ad>NUDGE_ON){ var r=d>0?SLOW:FAST; if(v.playbackRate!==r) v.playbackRate=r; }
+   else if(ad<NUDGE_OFF && v.playbackRate!==1){ v.playbackRate=1; }
    if(v.paused){ var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
   });
   this.paint(t);
   if(!this.el.classList.contains('playing')) return false;
-  if(t>=this.durs[this.ref]-0.05){ this.pause(); return false; }
+  if(this.vids[this.ref].currentTime>=this.durs[this.ref]-0.05){ this.pause(); return false; }
   return true;
  };
 
  document.querySelectorAll('.row').forEach(function(el){ rows.push(new Row(el)); });
 
- /* scrollspy: highlight the backbone section nearest the top of the viewport */
- var navlinks=[].slice.call(document.querySelectorAll('.navlink'));
- var sections=[].slice.call(document.querySelectorAll('.bb'));
- function setCur(id){
-  navlinks.forEach(function(a){ a.classList.toggle('cur', a.getAttribute('href')==='#'+id); });
+ /* start fetching a row's three clips shortly before it scrolls into view */
+ if('IntersectionObserver' in window){
+  var warmObs=new IntersectionObserver(function(entries){
+   entries.forEach(function(en){
+    if(!en.isIntersecting) return;
+    var r=rows.filter(function(x){ return x.el===en.target; })[0];
+    if(r) r.warm(); warmObs.unobserve(en.target);
+   });
+  },{rootMargin:'300px 0px'});
+  rows.forEach(function(r){ warmObs.observe(r.el); });
  }
- if('IntersectionObserver' in window && sections.length){
+
+ /* scrollspy: backbone sections */
+ function spy(selector, links, onChange){
+  var secs=[].slice.call(document.querySelectorAll(selector));
+  if(!('IntersectionObserver' in window) || !secs.length) return;
   var seen={};
   var obs=new IntersectionObserver(function(entries){
    entries.forEach(function(en){ seen[en.target.id]=en.isIntersecting; });
-   var inview=sections.filter(function(s){ return seen[s.id]; });
-   if(inview.length) setCur(inview[0].id);
-  },{rootMargin:'-15% 0px -75% 0px',threshold:0});
-  sections.forEach(function(s){ obs.observe(s); });
+   var inview=secs.filter(function(s){ return seen[s.id]; });
+   var id=inview.length?inview[0].id:null;
+   links.forEach(function(a){ a.classList.toggle('cur', id!==null && a.getAttribute('href')==='#'+id); });
+   if(onChange) onChange(id);
+  },{rootMargin:'-20% 0px -70% 0px',threshold:0});
+  secs.forEach(function(s){ obs.observe(s); });
  }
- if(sections.length) setCur(sections[0].id);
+ spy('.bb', [].slice.call(document.querySelectorAll('.navbb .navlink')));
 
  window.__rows=rows;   /* verification hook */
 })();
@@ -687,38 +732,87 @@ SCRIPT = r"""
 
 # --------------------------------------------------------------------------- page
 
+ICONS = {
+    "play": '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l5.5-3.5z"/></svg>',
+}
+
 PAGE = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>__TITLE__</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23FAF9F7'/%3E%3Crect x='2' y='5' width='12' height='2' fill='%23D6D1C9'/%3E%3Crect x='2' y='9' width='7' height='2' fill='%23B4531F'/%3E%3C/svg%3E">
+<meta name="description" content="__DESC__">
+<meta property="og:type" content="website">
+<meta property="og:title" content="__TITLE__">
+<meta property="og:description" content="__DESC__">
+<meta property="og:url" content="__URL__">
+<meta property="og:image" content="__URL__assets/ameca_cover.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23E8ECEF'/%3E%3Crect x='2' y='5' width='12' height='2' fill='%23BFC6CC'/%3E%3Crect x='2' y='9' width='7' height='2' fill='%231D5FA8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/charter_regular.woff2" as="font" type="font/woff2" crossorigin>
 <style>__CSS__</style>
 </head>
 <body>
-<div class="wrap">
-<header class="top">
-<h1>__TITLE_HTML__</h1>
-<p class="venue">__VENUE__</p>
-<p class="authors">__AUTHORS__</p>
-<hr class="rule">
-<p class="abstract">__ABSTRACT__</p>
+<header class="hero">
+ <div class="hero-in">
+  <div>
+   <p class="venue">__VENUE__</p>
+   <h1>__TITLE_HTML__</h1>
+   <p class="authors">__AUTHORS__</p>
+   <p class="tldr"><b>TL;DR</b> __TLDR__</p>
+   <div class="links">
+    <a href="#humanoid">__IC_PLAY__Watch the demo</a>
+   </div>
+  </div>
+  <figure class="cover">
+   <img class="fg" src="assets/ameca_cover.jpg" alt="The Ameca humanoid robot listening during a trial" width="800" height="1000">
+   <img class="bg" src="assets/ameca_cover.jpg" alt="" aria-hidden="true">
+   <figcaption>Ameca listening to a noisy utterance, before it speaks the enhanced output.</figcaption>
+  </figure>
+ </div>
 </header>
-</div>
 
-<nav class="siderail" aria-label="backbone sections" role="navigation"><span class="navhead">Backbone</span>__NAV__</nav>
+<nav class="topnav" aria-label="sections">
+ <div class="topnav-in">
+  <a class="brand" href="#">Situated Inference</a>
+  <span class="navbb">__NAVBB__</span>
+ </div>
+</nav>
 
-<div class="wrap">
-<section id="humanoid">
-__SECTIONS__
+<main>
+<section class="sec" id="abstract">
+ <div class="w-main">
+  <details class="abs"><summary>Abstract</summary><p class="text">__ABSTRACT__</p></details>
+ </div>
 </section>
-</div>
+
+<section class="sec" id="humanoid">
+ <div class="w-main">
+  <h2>__ROBOT_TITLE__</h2>
+  __ROBOT_TEXT__
+  <p class="howto">__ROBOT_HOWTO__</p>
+ </div>
+ <div class="wrap">
+__SECTIONS__
+ </div>
+</section>
+</main>
+
+<footer class="foot"><div class="w-main">__FOOTER__</div></footer>
 <audio id="sharedaudio" preload="none"></audio>
 <script>__SCRIPT__</script>
 </body>
 </html>
 """
+
+
+def paras(items):
+    """Trusted HTML from site.json (it carries <i>, <sub>, <b>)."""
+    return "".join('<p class="text">%s</p>' % t for t in items)
 
 
 def build(site, manifest):
@@ -728,43 +822,44 @@ def build(site, manifest):
     keys = [k for k in BACKBONE_ORDER if k in groups]
     keys += [k for k in groups if k not in BACKBONE_ORDER]
 
-    sections, navlinks = [], []
+    sections, navbb = [], []
     for i, k in enumerate(keys):
         entries = groups[k]
         name = entries[0].get("backbone_name") or BACKBONE_NAMES.get(k, str(k))
         sections.append(backbone_html(k, name, entries, i))
-        navlinks.append(
-            '<a class="navlink" href="#bb-%s" data-bb="%s">%s</a>' % (e(k), e(k), e(name))
-        )
+        navbb.append('<a class="navlink" href="#bb-%s">%s</a>' % (e(k), e(name)))
 
-    links = ""
-    if site.get("links"):
-        links = '<div class="links">%s</div>' % "".join(
-            '<a href="%s">%s</a>' % (e(l.get("href", "#")), e(l.get("label", "")))
-            for l in site["links"]
-        )
+    rob = site["robot"]
 
     out = PAGE
     for token, value in [
-        ("__TITLE__", e(site.get("title", ""))),
-        ("__TITLE_HTML__", title_html(site.get("title", ""))),
         ("__CSS__", CSS),
+        ("__SCRIPT__", SCRIPT),
+        ("__TITLE_HTML__", title_html(site.get("title", ""))),
+        ("__TITLE__", e(site.get("title", ""))),
+        ("__DESC__", e(site.get("tldr", ""))),
+        ("__URL__", e(site.get("page_url", ""))),
         ("__VENUE__", e(site.get("venue", ""))),
         ("__AUTHORS__", e(site.get("authors", ""))),
+        ("__TLDR__", e(site.get("tldr", ""))),
+        ("__IC_PLAY__", ICONS["play"]),
+        ("__NAVBB__", "".join(navbb)),
         ("__ABSTRACT__", e(site.get("abstract", ""))),
-        ("__LINKS__", links),
-        ("__NAV__", "".join(navlinks)),
-        ("__ROBOT_TITLE__", e(site.get("robot_section_title", "Robot demo"))),
-        ("__CAPTION__", e(site.get("section_caption", ""))),
+        ("__ROBOT_TITLE__", e(rob["title"])),
+        ("__ROBOT_TEXT__", paras(rob["text"])),
+        ("__ROBOT_HOWTO__", rob["howto"]),
         ("__SECTIONS__", "".join(sections)),
-        ("__SCRIPT__", SCRIPT),
+        ("__FOOTER__", site.get("footer", "")),
     ]:
         out = out.replace(token, value)
+    leftover = re.findall(r"__[A-Z_]+__", out)
+    if leftover:
+        raise SystemExit("unfilled tokens: %s" % sorted(set(leftover)))
     return out
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Build the AMECA showcase page.")
+    ap = argparse.ArgumentParser(description="Build the Situated Inference project page.")
     ap.add_argument("--site", default=os.path.join(HERE, "site.json"))
     ap.add_argument("--manifest", default=os.path.join(HERE, "robot", "manifest.json"))
     ap.add_argument("-o", "--out", default=os.path.join(HERE, "index.html"))

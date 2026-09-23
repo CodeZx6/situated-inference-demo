@@ -1,20 +1,17 @@
 {
   "title": "Situated Inference: Adapting Frozen Generative Speech Enhancement under Acoustic Distribution Shift",
   "authors": "Anonymous authors",
-  "venue": "ICLR 2027 submission — under review",
-  "abstract": "Diffusion and flow matching models restore noisy speech through iterative conditional generation, while a fixed inference strategy may become unsuitable under the acoustic distribution shifts encountered in real-world deployment. We find that these shifts change the effectiveness and portability of inference strategies even when the enhancer remains frozen. This finding motivates Situated Inference, which specializes the execution of a frozen generative enhancer to a target acoustic distribution using representative paired target speech. Situated Inference estimates a performance profile over a structured inference space whose strategies jointly control observation processing, the reverse starting point, and the solver step count. It uses this profile to specialize the enhancer under either a quality or efficiency objective and fixes the resulting strategy for subsequent inputs. Across four generative backbones and three acoustic conditions, Situated Inference improves perceptual speech quality under the quality objective and reduces the number of function evaluations (NFE) under the efficiency objective. Strategy portability and component analyses further indicate that effective strategies depend on acoustic conditions and that joint adaptation captures benefits beyond changing the solver step count alone.",
-  "links": [
-    {
-      "label": "Robot demo",
-      "href": "#humanoid",
-      "style": "is-primary"
-    }
-  ],
-  "robot_section_title": "Situated Inference on an Ameca humanoid",
-  "section_caption": "Three passes over the same utterances: the backbone's default strategy, then the strategies selected by Situated Inference under the quality and efficiency objectives. The pause is the measured GPU compute time (H200, batch 1).",
-  "intro": [
-    "Each trial is recorded in a real room. A loudspeaker plays one noisy utterance from the LSM condition, and the Ameca humanoid listens through its own ear microphone; that recording is the <b>heard</b> player below. The frozen backbone&rsquo;s measured inference time for that utterance &mdash; NVIDIA H200, batch size 1, steady state &mdash; is then reproduced as a pause, after which Ameca speaks the enhanced output with lip-sync. The pause is the measured GPU compute time and nothing else: no network round-trip, disk, or codec overhead is added to it.",
-    "We make three passes over the same 30 utterances, in the same clip order every time: the backbone&rsquo;s <b>default</b> inference strategy, then the strategy selected by Situated Inference under the <b>quality objective</b>, then the one selected under the <b>efficiency objective</b>. The videos are uncut, so the visible wait is exactly the reproduced compute time, and the three timelines in a row share one axis for direct comparison. For SGMSE+ and StoRM the two objectives select the same strategy, and the efficiency arm is marked accordingly."
-  ],
-  "footnote": "Timelines share one axis within each utterance row. The timer reports elapsed time since the noisy input ends; the inference segment is the reproduced GPU compute time for that utterance and configuration."
+  "venue": "ICLR 2027 submission · under review",
+  "page_url": "https://codezx6.github.io/situated-inference-demo/",
+  "tldr": "Situated Inference adapts a frozen generative speech enhancer to a new acoustic environment by changing how it is run, not what it has learned. From a small set of paired target speech it selects the observation processing, the reverse starting point, and the solver step count, then keeps that strategy fixed for subsequent inputs.",
+  "abstract": "Diffusion and flow matching models typically enhance speech using fixed inference strategies that may become unsuitable under acoustic distribution shifts in real-world deployment. Our cross-condition analysis shows that the advantage of an inference strategy is not consistently preserved across acoustic conditions, even when the model weights and solver update rule remain fixed. This finding motivates Situated Inference, which specializes a frozen generative enhancer to a target acoustic distribution through its inference strategy. Situated Inference evaluates a structured inference space that jointly varies observation processing, the reverse starting point, and the solver step count, thereby constructing a target-specific quality and computation profile. From this profile, it selects one strategy either to maximize enhancement quality or to minimize computation subject to the reference quality, then fixes that strategy for subsequent inputs. Across four generative backbones and three acoustic conditions, Situated Inference improves perceptual speech quality under quality specialization and reduces the number of function evaluations under efficiency specialization. Deployment on the Ameca humanoid further demonstrates the practical effectiveness of Situated Inference under real-world acoustic conditions.",
+  "robot": {
+    "title": "Situated Inference on the Ameca humanoid",
+    "text": [
+      "Each trial is recorded in a real room. A loudspeaker plays a noisy utterance from the LSM condition and Ameca listens through its own ear microphone, which is the <b>Ameca heard</b> recording. The frozen backbone’s measured inference time for that utterance, on an NVIDIA H200 at batch size 1, is reproduced as a pause, after which Ameca speaks the enhanced output with lip-sync. Each clip is uncut, so the visible wait is exactly the reproduced compute time.",
+      "Every row races the backbone’s <b>default</b> strategy against the strategies selected by Situated Inference under the <b>quality</b> and <b>efficiency</b> objectives on one shared time axis. For SGMSE+ and StoRM the two objectives select the same strategy."
+    ],
+    "howto": "<b>Play all</b> runs the three arms in sync with the sound of the fastest arm. Click a video while it plays to listen to that arm instead, or use its play button to watch it alone."
+  },
+  "footer": "Anonymous ICLR 2027 submission. Page design adapted from <a href=\"https://shikun.io/projects/clarity\">Clarity</a>."
 }
