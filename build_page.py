@@ -2,12 +2,11 @@
 """Build the static Situated Inference project page (index.html).
 
 DESIGN NOTE (2026-09, Clarity rebuild)
- 1. Layout and typography follow Clarity (Shikun Liu, CC0, shikun.io/projects/clarity):
-    tinted hero with a cover image and its blurred copy behind it, a serif reading
+ 1. Typography follows Clarity (Shikun Liu, CC0, shikun.io/projects/clarity): a serif reading
     column (Charter, bundled in assets/fonts) under sans headings (Poppins), and width
     tiers (main 760 / demo 1240 px). No jQuery, MathJax or FontAwesome: static HTML.
- 2. The page is the demo: a short hero (title, TL;DR, cover), a collapsible abstract,
-    then the Ameca humanoid rows. All text lives in site.json.
+ 2. The page is the demo: centred title, the abstract, then the Ameca humanoid rows.
+    Backbone navigation is a side rail (>=1100 px) or a sticky bar. Text lives in site.json.
  3. The Ameca demo keeps the synchronised 'race' rows: three arms on one clock, a
     shared Gantt axis and one playhead. Strategy accents: default #6B6660, situated
     quality #1D5FA8, situated efficiency #B4531F.
@@ -326,59 +325,44 @@ img{display:block;max-width:100%;height:auto}
 
 /* ---------- hero ---------- */
 .hero{background:var(--hero)}
-.hero-in{max-width:calc(var(--large) + 2*var(--s4));margin:0 auto;padding:var(--s5) var(--s4);
- display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center}
+.hero-in{max-width:calc(var(--main) + 2*var(--s4));margin:0 auto;padding:var(--s6) var(--s4) var(--s5);text-align:center}
 .venue{font:600 12px/1.5 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin:0 0 var(--s3)}
-h1{margin:0 0 var(--s4);display:flex;flex-direction:column;gap:var(--s2);line-height:1.15;letter-spacing:-.015em;font-weight:600}
-.t1{font-size:clamp(32px,4.2vw,50px);color:var(--a1)}
-.t2{font-size:clamp(19px,2.1vw,26px);font-weight:500;color:var(--ink)}
-.authors{font-style:italic;font-weight:500;font-size:15px;margin:0 0 var(--s4);color:var(--ink2)}
-.tldr{font:400 16.5px/1.6 var(--sans);margin:0 0 var(--s5);color:var(--ink)}
-.tldr b{color:var(--a1)}
-.links{display:flex;gap:var(--s3);flex-wrap:wrap}
-.links a{display:inline-flex;align-items:center;gap:8px;font:500 14px/1 var(--sans);text-decoration:none;
- color:var(--ink);background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.08);border-radius:999px;padding:10px 16px;
- transition:background .15s,border-color .15s}
-.links a:hover{background:#fff;border-color:rgba(0,0,0,.18)}
-.links svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.cover{position:relative;justify-self:end;width:min(100%,300px)}
-.cover img{width:100%;height:auto;border-radius:10px;aspect-ratio:4/5;object-fit:cover}
-.cover .fg{position:relative;z-index:2}
-.cover .bg{position:absolute;inset:0;z-index:1;filter:blur(26px);opacity:.75;transform:translateY(10px) scale(.96)}
-.cover figcaption{position:relative;z-index:2;font:400 12.5px/1.4 var(--sans);color:var(--ink2);margin-top:var(--s2);text-align:center}
+h1{margin:0 0 var(--s3);display:flex;flex-direction:column;align-items:center;gap:6px;line-height:1.2;letter-spacing:-.01em;font-weight:600}
+/* one size step apart: 30 / 26 px on desktop */
+.t1{font-size:clamp(25px,3vw,30px);color:var(--a1)}
+.t2{font-size:clamp(21px,2.6vw,26px);font-weight:500;color:var(--ink)}
+.authors{font-style:italic;font-weight:500;font-size:15px;margin:0;color:var(--ink2)}
 
-/* ---------- sticky nav ---------- */
-.topnav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(8px);
- -webkit-backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--rule)}
-.topnav-in{max-width:calc(var(--measure) + 2*var(--s4));margin:0 auto;padding:0 var(--s4);height:48px;
- display:flex;align-items:center;gap:var(--s4);overflow-x:auto;scrollbar-width:none}
-.topnav-in::-webkit-scrollbar{display:none}
-.brand{font:600 14px/1 var(--sans);color:var(--a1);text-decoration:none;white-space:nowrap;margin-right:auto}
-.navlink{font:500 13px/48px var(--sans);color:var(--ink2);text-decoration:none;white-space:nowrap;
+/* ---------- backbone nav: side rail when there is room, sticky bar otherwise ---------- */
+.siderail{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
+ -webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);display:flex;gap:var(--s4);align-items:center;
+ justify-content:center;overflow-x:auto;height:44px;padding:0 var(--s4);scrollbar-width:none}
+.siderail::-webkit-scrollbar{display:none}
+.navhead{display:none}
+.navlink{font:500 13px/44px var(--sans);color:var(--ink2);text-decoration:none;white-space:nowrap;
  border-bottom:2px solid transparent}
 .navlink:hover{color:var(--ink)}
 .navlink.cur{color:var(--ink);border-bottom-color:var(--ink)}
-.navbb{display:flex;align-items:center;gap:var(--s4)}
-.navbb .navlink.cur{color:var(--ink)}
-@media (max-width:720px){ .brand{display:none} .topnav-in{gap:var(--s3)} }
+@media (min-width:1100px){
+ /* page stays centred on the viewport; the demo column narrows to leave a 160 px margin for the rail */
+ .wrap{max-width:min(calc(var(--measure) + 2*var(--s4)), calc(100vw - 320px))}
+ .siderail{position:fixed;top:50%;transform:translateY(-50%);left:max(16px, calc((100vw - var(--measure))/2 - 150px));height:auto;width:120px;
+  flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:2px;background:none;border:0;
+  padding:0;overflow:visible;backdrop-filter:none;-webkit-backdrop-filter:none}
+ .siderail .navhead{display:block;font:600 11px/1.6 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);margin:0 0 6px;padding-left:12px}
+ .siderail .navlink{font:500 13px/1.5 var(--sans);border-bottom:0;border-left:2px solid var(--rule);padding:5px 0 5px 12px}
+ .siderail .navlink.cur{border-left-color:var(--ink)}
+}
 
 /* ---------- sections ---------- */
 section.sec{padding:var(--s5) 0 0;scroll-margin-top:48px}
-#humanoid{padding-top:var(--s5)}
+#humanoid{padding-top:var(--s3)}
 .kicker{font:600 12px/1.5 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:0 0 var(--s2)}
 h2{font:600 clamp(24px,2.6vw,30px)/1.2 var(--sans);letter-spacing:-.01em;margin:0 0 var(--s4)}
 p.text{font:400 18px/1.68 var(--serif);color:#353535;margin:0 0 var(--s4)}
 p.text i{font-style:italic}
 .m{white-space:nowrap}
-details.abs{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:var(--s3) 0}
-details.abs summary{cursor:pointer;font:600 12px/1.5 var(--sans);letter-spacing:.12em;text-transform:uppercase;
- color:var(--ink2);list-style:none}
-details.abs summary::-webkit-details-marker{display:none}
-details.abs summary:before{content:"+";display:inline-block;width:1.2em;font-weight:500}
-details.abs[open] summary:before{content:"\2212"}
-details.abs p.text{margin:var(--s3) 0 var(--s2)}
-.howto{font:400 14px/1.55 var(--sans);color:var(--ink2);margin:0 0 var(--s2);padding:var(--s3) var(--s4);
- background:var(--panel);border-radius:6px}
 footer.foot{margin-top:var(--s6);padding:var(--s5) 0;border-top:1px solid var(--rule);font:400 13px/1.6 var(--sans);color:var(--ink3);text-align:center}
 
 /* ---------- backbone sections ---------- */
@@ -492,13 +476,11 @@ footer.foot{margin-top:var(--s6);padding:var(--s5) 0;border-top:1px solid var(--
 
 /* ---------- responsive ---------- */
 @media (max-width:899px){
- .hero-in{grid-template-columns:1fr;padding:var(--s5) var(--s4)}
- .cover{justify-self:center;width:min(100%,300px)}
  .cells{grid-template-columns:1fr;gap:var(--s4)}
  .gantt{--glab:74px}
  .axis{padding-left:74px}
 }
-@media (max-width:600px){ .cover{display:none} .hero-in{padding:var(--s4)} .tldr{margin-bottom:var(--s4)} }
+@media (max-width:600px){ .hero-in{padding:var(--s5) var(--s4) var(--s4)} }
 @media (max-width:480px){
  p.text{font-size:17px}
  .cell{flex-direction:column}
@@ -723,7 +705,7 @@ SCRIPT = r"""
   },{rootMargin:'-20% 0px -70% 0px',threshold:0});
   secs.forEach(function(s){ obs.observe(s); });
  }
- spy('.bb', [].slice.call(document.querySelectorAll('.navbb .navlink')));
+ spy('.bb', [].slice.call(document.querySelectorAll('.siderail .navlink')));
 
  window.__rows=rows;   /* verification hook */
 })();
@@ -732,9 +714,6 @@ SCRIPT = r"""
 
 # --------------------------------------------------------------------------- page
 
-ICONS = {
-    "play": '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l5.5-3.5z"/></svg>',
-}
 
 PAGE = """<!DOCTYPE html>
 <html lang="en">
@@ -759,43 +738,23 @@ PAGE = """<!DOCTYPE html>
 <body>
 <header class="hero">
  <div class="hero-in">
-  <div>
-   <p class="venue">__VENUE__</p>
-   <h1>__TITLE_HTML__</h1>
-   <p class="authors">__AUTHORS__</p>
-   <p class="tldr"><b>TL;DR</b> __TLDR__</p>
-   <div class="links">
-    <a href="#humanoid">__IC_PLAY__Watch the demo</a>
-   </div>
-  </div>
-  <figure class="cover">
-   <img class="fg" src="assets/ameca_cover.jpg" alt="The Ameca humanoid robot listening during a trial" width="800" height="1000">
-   <img class="bg" src="assets/ameca_cover.jpg" alt="" aria-hidden="true">
-   <figcaption>Ameca listening to a noisy utterance, before it speaks the enhanced output.</figcaption>
-  </figure>
+  <p class="venue">__VENUE__</p>
+  <h1>__TITLE_HTML__</h1>
+  <p class="authors">__AUTHORS__</p>
  </div>
 </header>
 
-<nav class="topnav" aria-label="sections">
- <div class="topnav-in">
-  <a class="brand" href="#">Situated Inference</a>
-  <span class="navbb">__NAVBB__</span>
- </div>
-</nav>
+<nav class="siderail" aria-label="backbones"><span class="navhead">Backbone</span>__NAVBB__</nav>
 
 <main>
 <section class="sec" id="abstract">
  <div class="w-main">
-  <details class="abs"><summary>Abstract</summary><p class="text">__ABSTRACT__</p></details>
+  <p class="kicker">Abstract</p>
+  <p class="text">__ABSTRACT__</p>
  </div>
 </section>
 
 <section class="sec" id="humanoid">
- <div class="w-main">
-  <h2>__ROBOT_TITLE__</h2>
-  __ROBOT_TEXT__
-  <p class="howto">__ROBOT_HOWTO__</p>
- </div>
  <div class="wrap">
 __SECTIONS__
  </div>
@@ -829,7 +788,6 @@ def build(site, manifest):
         sections.append(backbone_html(k, name, entries, i))
         navbb.append('<a class="navlink" href="#bb-%s">%s</a>' % (e(k), e(name)))
 
-    rob = site["robot"]
 
     out = PAGE
     for token, value in [
@@ -841,13 +799,8 @@ def build(site, manifest):
         ("__URL__", e(site.get("page_url", ""))),
         ("__VENUE__", e(site.get("venue", ""))),
         ("__AUTHORS__", e(site.get("authors", ""))),
-        ("__TLDR__", e(site.get("tldr", ""))),
-        ("__IC_PLAY__", ICONS["play"]),
         ("__NAVBB__", "".join(navbb)),
         ("__ABSTRACT__", e(site.get("abstract", ""))),
-        ("__ROBOT_TITLE__", e(rob["title"])),
-        ("__ROBOT_TEXT__", paras(rob["text"])),
-        ("__ROBOT_HOWTO__", rob["howto"]),
         ("__SECTIONS__", "".join(sections)),
         ("__FOOTER__", site.get("footer", "")),
     ]:
